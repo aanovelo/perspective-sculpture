@@ -43,6 +43,9 @@ def create_cube(size: float, x: float, y: float, z: float, name: str) -> str:
 def generate_cubes(
     cube_size: float, cube_spacing: float, width: int, height: int, depth: int
 ) -> str:
+    """
+    Generate a 3d array of cubes
+    """
     cube_index = 0
     cube_array = []
     for x in range(width):
@@ -62,6 +65,9 @@ def generate_cubes(
 
 
 def generate_draw_calls(start: int, end: int, buffer: str) -> str:
+    """
+    Helper function to generate the needed draw calls
+    """
     calls = []
     for i in range(start, end):
         calls.append(f"drawCubes({buffer}, cube{i});")
@@ -69,14 +75,13 @@ def generate_draw_calls(start: int, end: int, buffer: str) -> str:
 
 
 def main():
+    # Copy cubes and draw calls into their respective parts of lighting.html
     lines = (
         generate_cubes(2, 0.1, 3, 3, 3)
         + "\n\n"
         + generate_draw_calls(0, 27, "cubeBuffer")
     )
-    # print(generate_cubes(2, 0.1, 3, 3, 3))
     with open("./cubes.txt", "w") as f:
-        # f.writelines(generate_cubes(2, 0.1, 3, 3, 3))
         f.writelines(lines)
 
 
