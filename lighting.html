@@ -830,6 +830,31 @@
             zoomRadius = Math.max(10.0, Math.min(100.0, zoomRadius)); // clamp zoom radius (maz and min distance)
           });
 
+          // animation
+          let isIdle = false;
+          let idleRotationAngle = 0; // angle for idle rotation
+          let idleTimeout;
+          const idleTimeLimit = 2000; // 2 sec
+
+          function resetIdleTimer() {
+            clearTimeout(idleTimeout);
+            isIdle = false;
+            idleTimeout = setTimeout(() => {
+              console.log("User is idle.");
+              isIdle = true;
+            }, idleTimeLimit);
+          }
+
+          // reset the idle timer on user interaction
+          window.addEventListener('mousemove', resetIdleTimer);
+          window.addEventListener('mousedown', resetIdleTimer);
+          window.addEventListener('mouseup', resetIdleTimer);
+          window.addEventListener('keydown', resetIdleTimer);
+          window.addEventListener('keyup', resetIdleTimer);
+
+          // Initialize the idle timer
+          resetIdleTimer();
+
           function animate() {
             // interpolation
             currentCursorX = interpolate(currentCursorX, cursorX, easeFactor);
@@ -839,18 +864,39 @@
             const maxVerticalAngle = Math.PI / 2 - 0.01; // vertical rotation cannot go above 90 degrees
             const clampedCursorY = Math.max(Math.min(currentCursorY, maxVerticalAngle), -maxVerticalAngle);
 
-            const eyeX = zoomRadius * Math.sin(currentCursorX) * Math.cos(clampedCursorY); // y axis rotation
-            const eyeY = zoomRadius * Math.sin(clampedCursorY); // x axis rotation
-            const eyeZ = zoomRadius * Math.cos(currentCursorX) * Math.cos(clampedCursorY); // y axis rotation
+            let eyeX, eyeY, eyeZ;
+
+            if (isIdle) {
+              // apply slow rotation in place when idle
+              idleRotationAngle += 0.01;
+
+              // create a rotation matrix for the model
+              const rotationMatrix = mat4.create();
+              mat4.rotateY(rotationMatrix, rotationMatrix, idleRotationAngle);
+
+              // apply the rotation matrix to the model matrix
+              const modelMatrix = mat4.create();
+              mat4.multiply(modelMatrix, rotationMatrix, modelMatrix);
+              gl.uniformMatrix4fv(uModelMatrixPointer, false, new Float32Array(modelMatrix));
+
+              // keep the camera static
+              eyeX = zoomRadius * Math.sin(currentCursorX) * Math.cos(clampedCursorY);
+              eyeY = zoomRadius * Math.sin(clampedCursorY);
+              eyeZ = zoomRadius * Math.cos(currentCursorX) * Math.cos(clampedCursorY);
+            } else {
+              // normal camera movement
+              eyeX = zoomRadius * Math.sin(currentCursorX) * Math.cos(clampedCursorY);
+              eyeY = zoomRadius * Math.sin(clampedCursorY);
+              eyeZ = zoomRadius * Math.cos(currentCursorX) * Math.cos(clampedCursorY);
+            }
             const eyePoint = [eyeX, eyeY, eyeZ, 1.0];
 
             const viewMatrix = mat4.create();
             mat4.lookAt(viewMatrix, eyePoint, lookAtPoint, upVector);
 
-            gl.uniformMatrix4fv(uViewMatrixPointer, false, new Float32Array(viewMatrix))
+            gl.uniformMatrix4fv(uViewMatrixPointer, false, new Float32Array(viewMatrix));
 
-            // draw cubes weeeeeeeeeeeeeeeeeeeeeeeeee
-            // todo: [cube1,cube2,...].foreach(drawCubes(stuff))
+            // draw cubes
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
             drawCubes(cubeBuffer, cube1);
