@@ -11,7 +11,7 @@
       uniform mat4 uProjectionMatrix;           //Projection Matrix
 
       uniform mat4 uNormalMatrix;               //Normal Matrix
-      
+
       uniform vec4 uMaterialDiffuseColor;       //Kd
       uniform vec4 uLightDiffuseColor;          //Ld
 
@@ -699,7 +699,7 @@
         5.3, 7.3, 1.0, 1.0,
         5.3, 7.3, -1.0, 1.0
       ];
-  
+
       // Indices of the vertices
       var indices = [
         0, 1, 2, 0, 2, 3,    // Front face
@@ -770,76 +770,85 @@
 
       // CANVAS ROTATION HANDLER
       // left click to rotate
-      
-      // how far the cam is from the object 
-          const radius = 50.0; 
-          const easeFactor = 0.05; 
+
+      // how far the cam is from the object
+          const radius = 50.0;
+          const easeFactor = 0.05;
 
           let isMouseDown = false;
 
           let cursorX = 0;
-          let cursorY = 0; 
+          let cursorY = 0;
           let currentCursorX = 0;
           let currentCursorY = 0;
           let initialMouseX = 0;
-          let initialMouseY = 0; 
-          
+          let initialMouseY = 0;
+
           // Listen for mouse movement
           window.addEventListener('mousemove', (event) => {
-            if (isMouseDown) { 
-              const mouseX = event.clientX; 
-              const mouseY = event.clientY; 
-          
+            if (isMouseDown) {
+              const mouseX = event.clientX;
+              const mouseY = event.clientY;
+
               const deltaX = mouseX - initialMouseX;
               const deltaY = mouseY - initialMouseY;
-          
-              const sensitivity = 0.005; 
-              cursorX += deltaX * sensitivity; 
-              cursorY += deltaY * sensitivity; 
-          
+
+              const sensitivity = 0.005;
+              cursorX += deltaX * sensitivity;
+              cursorY += deltaY * sensitivity;
+
               initialMouseX = mouseX;
               initialMouseY = mouseY;
             }
           });
-          
+
           window.addEventListener('mousedown', (event) => {
-            if (event.button === 0) { 
+            if (event.button === 0) {
               isMouseDown = true;
               initialMouseX = event.clientX;
               initialMouseY = event.clientY;
             }
           });
-          
+
           window.addEventListener('mouseup', (event) => {
             if (event.button === 0) { // Left mouse button (button 0)
               isMouseDown = false;
             }
           });
-          
+
           // Linear interpolation
           function interpolate(start, end, t) {
             return start + (end - start) * t;
           }
-          
+
+          // zooming functionality
+          let zoomRadius = radius;
+
+          window.addEventListener('wheel', (event) => {
+            const zoomSpeed = 1.0;
+            zoomRadius += event.deltaY * 0.01 * zoomSpeed; // deltaY = scroll direction
+            zoomRadius = Math.max(10.0, Math.min(100.0, zoomRadius)); // clamp zoom radius (maz and min distance)
+          });
+
           function animate() {
             // interpolation
             currentCursorX = interpolate(currentCursorX, cursorX, easeFactor);
             currentCursorY = interpolate(currentCursorY, cursorY, easeFactor);
-          
+
             // cursorY stays within limits
             const maxVerticalAngle = Math.PI / 2 - 0.01; // vertical rotation cannot go above 90 degrees
             const clampedCursorY = Math.max(Math.min(currentCursorY, maxVerticalAngle), -maxVerticalAngle);
-          
-            const eyeX = radius * Math.sin(currentCursorX) * Math.cos(clampedCursorY); // y axis rotation
-            const eyeY = radius * Math.sin(clampedCursorY); // x axis rotation
-            const eyeZ = radius * Math.cos(currentCursorX) * Math.cos(clampedCursorY); // y axis rotation
+
+            const eyeX = zoomRadius * Math.sin(currentCursorX) * Math.cos(clampedCursorY); // y axis rotation
+            const eyeY = zoomRadius * Math.sin(clampedCursorY); // x axis rotation
+            const eyeZ = zoomRadius * Math.cos(currentCursorX) * Math.cos(clampedCursorY); // y axis rotation
             const eyePoint = [eyeX, eyeY, eyeZ, 1.0];
 
             const viewMatrix = mat4.create();
             mat4.lookAt(viewMatrix, eyePoint, lookAtPoint, upVector);
-          
+
             gl.uniformMatrix4fv(uViewMatrixPointer, false, new Float32Array(viewMatrix))
-            
+
             // draw cubes weeeeeeeeeeeeeeeeeeeeeeeeee
             // todo: [cube1,cube2,...].foreach(drawCubes(stuff))
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -863,7 +872,7 @@
 
             requestAnimationFrame(animate);
           }
-          
+
           // start animation
           requestAnimationFrame(animate);
     }
