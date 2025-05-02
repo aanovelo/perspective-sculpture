@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script type="x-shader/x-vertex" id="vshader">
+      attribute vec4 aPosition;
+      attribute vec4 aNormal;   // variable for normal vector at each vertex
+
+      uniform mat4 uModelMatrix;                // Model Matrix
+      uniform mat4 uViewMatrix;                 // View Matrix
+      uniform mat4 uProjectionMatrix;           // Projection Matrix
+
+      uniform mat4 uNormalMatrix;               // Normal Matrix
+      
+      uniform vec4 uMaterialDiffuseColor;       // Kd
+      uniform vec4 uLightDiffuseColor;          // Ld
+
+      uniform vec4 uLightDirectionVector;       // l
+
+      varying vec4 vDiffuseColor;
+
+      void main() {
+
+        gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aPosition;
+
+        // Get corrected normal vector from transformation
+        vec4 corrected_aNormal = uNormalMatrix * aNormal;
+
+        // Get normalized normal and light vector
+            vec4 normalized_aNormalVector = normalize(corrected_aNormal);
+            vec4 normalized_uLightDirectionVector = normalize(uLightDirectionVector);
+
+        // Get lambertCooeficient = (-l . n)
+            float lambertCoefficient = max(dot(-normalized_uLightDirectionVector,normalized_aNormalVector),0.0);
+
+        // Fd = Ld * Kd * (n dot -l)
+            vec4 diffuseColor =  uMaterialDiffuseColor * uLightDiffuseColor * lambertCoefficient;
+
+        vDiffuseColor = vec4(diffuseColor.r, diffuseColor.g, diffuseColor.b, 1.0);
+      }
+    </script>
+
+  <script type="x-shader/x-fragment" id="fshader">
+      precision mediump float;
+      varying vec4 vDiffuseColor;
+
+      void main() {
+        gl_FragColor = vDiffuseColor;
+      }
+    </script>
+
+  <!-- Import external javascript file -->
+  <!-- Helper javascript methods for initializing webgl -->
+  <script src="./lib/webgl-init.js"></script>
+  <script src="./lib/webgl-utils.js"></script>
+  <script src="./lib/webgl-debug.js"></script>
+  <script src="./lib/gl-matrix-min.js"></script>
+
+  <!-- Link the external Javascript file -->
+  <script src="main.js" defer></script>
+</head>
+
+<body onload="main()" style="margin: 0;">
+  <canvas id="main_canvas" width="800" height="800" style="border: 1px black solid; width: -webkit-fill-available;">
+  </canvas>
+</body>
+
+</html>
