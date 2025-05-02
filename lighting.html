@@ -147,13 +147,16 @@
       var uLightDirectionVectorPtr = gl.getUniformLocation(program, "uLightDirectionVector");
       gl.uniform4f(uLightDirectionVectorPtr, -1.0, -3.0, -5.0, 0.0);
 
+      // Initialize the cube parameters and dimensions
       var cubeCountLength = 10;
       var cubeCountHeight = 5;
+      var cubeCount = cubeCountLength * cubeCountHeight;
       var edgeLength = 2.0;
       var startCoordX = -cubeCountLength * edgeLength / 2;
       var startCoordY = 0;
       var generatedCubes = [];
 
+      // Create the cubes
       function createCubes() {
         for (var i = 0; i < cubeCountLength; i++) {
           for (var j = 0; j < cubeCountHeight; j++) {
@@ -234,11 +237,26 @@
       gl.vertexAttribPointer(aNormalPointer, 4, gl.FLOAT, false, 0, 0);
       gl.enableVertexAttribArray(aNormalPointer);
 
-      //draw part
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-      gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_BYTE, 0);
+      // Initialize the string parameters
+      var generatedStrings = [];
+      var cubeCenter = edgeLength / 2; 
 
-      //buffer creation
+      // Create the strings
+      function createStrings(){
+        for (var i = 0; i < cubeCount; i++) {
+          var x = generatedCubes[i][0] + cubeCenter; // center of the cube
+          var y = generatedCubes[i][1] + cubeCenter; // center of the cube
+          var z = generatedCubes[i][2] - cubeCenter; // center of the cube
+          var string = [
+            x, y, z, 1.0,
+            x, top, z, 1.0
+          ];
+          generatedStrings.push(string);
+        }
+      }
+      createStrings();
+
+      // cube buffer creation
       var cubeBuffer = gl.createBuffer();
       function drawCubes(cubeBuffer, cube) {
         gl.bindBuffer(gl.ARRAY_BUFFER, cubeBuffer);
@@ -249,9 +267,20 @@
         gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_BYTE, 0);
       }
 
-      var cubeCount = generatedCubes.length;
+      // string buffer creation
+      var stringBuffer = gl.createBuffer();
+      function drawStrings(stringBuffer, string) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, stringBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(string), gl.STATIC_DRAW);
+        gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(aPositionPointer);
+        gl.drawArrays(gl.LINES, 0, 2); // Draw the line
+      }
+
+      // draw the cubes and strings
       for (var i = 0; i < cubeCount; i++) {
         drawCubes(cubeBuffer, generatedCubes[i]);
+        drawStrings(stringBuffer, generatedStrings[i]);
       }
 
 
@@ -333,6 +362,7 @@
         gl.clear(gl.COLOR_BUFFER_BIT);
         for (var i = 0; i < cubeCount; i++) {
           drawCubes(cubeBuffer, generatedCubes[i]);
+          drawStrings(stringBuffer, generatedStrings[i]);
         }
         requestAnimationFrame(animate);
       }
@@ -343,8 +373,8 @@
   </script>
 </head>
 
-<body onload="main()">
-  <canvas id="main_canvas" width="800" height="800" style="border: 1px black solid; ">
+<body onload="main()" style="margin: 0;">
+  <canvas id="main_canvas" width="800" height="800" style="border: 1px black solid; width: -webkit-fill-available;">
   </canvas>
 </body>
 
