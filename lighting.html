@@ -110,7 +110,7 @@
 
       /**START VIEW MATRIX SPECIFICATION**/
       var lookAtPoint = [0.0, 0.0, 0.0, 1.0];              //where the camera is looking
-      var eyePoint = [15.0, 20.0, 25.0, 1.0];              //where the camera is placed
+      var eyePoint = [0.0, 0.0, 25.0, 1.0];              //where the camera is placed
       var upVector = [0.0, 1.0, 0.0, 0.0];              //orientation of the camera
 
       viewMatrix = mat4.create();
@@ -140,566 +140,62 @@
       var uLightDirectionVectorPtr = gl.getUniformLocation(program, "uLightDirectionVector");
       gl.uniform4f(uLightDirectionVectorPtr, -1.0, -3.0, -5.0, 0.0);
 
-      var cube1 = [   // Coordinates
-        // Front face
-        -1.0, -1.0, 1.0, 1.0,
-        1.0, -1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0, 1.0,
-        -1.0, 1.0, 1.0, 1.0,
+      var cubeCountLength = 10;
+      var cubeCountHeight = 5;
+      var edgeLength = 2.0;
+      var startCoordX = -cubeCountLength * edgeLength / 2;
+      var startCoordY = 0;
+      var generatedCubes = [];
+
+      function createCubes() {
+        for (var i = 0; i < cubeCountLength; i++) {
+          for (var j = 0; j < cubeCountHeight; j++) {
+            var x = startCoordX + i * edgeLength;
+            var y = startCoordY + j * edgeLength;
+            var z = Math.random() * -50;
+            var cube = [
+              // Front face
+              x - 1.0, y - 1.0, z + 1.0, 1.0,
+              x + 1.0, y - 1.0, z + 1.0, 1.0,
+              x + 1.0, y + 1.0, z + 1.0, 1.0,
+              x - 1.0, y + 1.0, z + 1.0, 1.0,
+
+              // Back face
+              x - 1.0, y - 1.0, z - 1.0, 1.0,
+              x - 1.0, y + 1.0, z - 1.0, 1.0,
+              x + 1.0, y + 1.0, z - 1.0, 1.0,
+              x + 1.0, y - 1.0, z - 1.0, 1.0,
+
+              // Top face
+              x - 1.0, y + 1.0, z - 1.0, 1.0,
+              x - 1.0, y + 1.0, z + 1.0, 1.0,
+              x + 1.0, y + 1.0, z + 1.0, 1.0,
+              x + 1.0, y + 1.0, z - 1.0, 1.0,
+
+              // Bottom face
+              x - 1.0, y - 1.0, z - 1.0, 1.0,
+              x + 1.0, y - 1.0, z - 1.0, 1.0,
+              x + 1.0, y - 1.0, z + 1.0, 1.0,
+              x - 1.0, y - 1.0, z + 1.0, 1.0,
+
+              // Right face
+              x + 1.0, y - 1.0, z - 1.0, 1.0,
+              x + 1.0, y + 1.0, z - 1.0, 1.0,
+              x + 1.0, y + 1.0, z + 1.0, 1.0,
+              x + 1.0, y - 1.0, z + 1.0, 1.0,
+
+              // Left face
+              x - 1.0, y - 1.0, z - 1.0, 1.0,
+              x - 1.0, y - 1.0, z + 1.0, 1.0,
+              x - 1.0, y + 1.0, z + 1.0, 1.0,
+              x - 1.0, y + 1.0, z - 1.0, 1.0
+            ];
+            generatedCubes.push(cube);
+          }
+        }
+      }
+      createCubes();
 
-        // Back face
-        -1.0, -1.0, -1.0, 1.0,
-        -1.0, 1.0, -1.0, 1.0,
-        1.0, 1.0, -1.0, 1.0,
-        1.0, -1.0, -1.0, 1.0,
-
-        // Top face
-        -1.0, 1.0, -1.0, 1.0,
-        -1.0, 1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0, 1.0,
-        1.0, 1.0, -1.0, 1.0,
-
-        // Bottom face
-        -1.0, -1.0, -1.0, 1.0,
-        1.0, -1.0, -1.0, 1.0,
-        1.0, -1.0, 1.0, 1.0,
-        -1.0, -1.0, 1.0, 1.0,
-
-        // Right face
-        1.0, -1.0, -1.0, 1.0,
-        1.0, 1.0, -1.0, 1.0,
-        1.0, 1.0, 1.0, 1.0,
-        1.0, -1.0, 1.0, 1.0,
-
-        // Left face
-        -1.0, -1.0, -1.0, 1.0,
-        -1.0, -1.0, 1.0, 1.0,
-        -1.0, 1.0, 1.0, 1.0,
-        -1.0, 1.0, -1.0, 1.0
-      ];
-
-      var cube2 = [
-        // Front face
-        1.1, -1.0, 1.0, 1.0,
-        3.1, -1.0, 1.0, 1.0,
-        3.1, 1.0, 1.0, 1.0,
-        1.1, 1.0, 1.0, 1.0,
-
-        // Back face
-        1.1, -1.0, -1.0, 1.0,
-        1.1, 1.0, -1.0, 1.0,
-        3.1, 1.0, -1.0, 1.0,
-        3.1, -1.0, -1.0, 1.0,
-
-        // Top face
-        1.1, 1.0, -1.0, 1.0,
-        1.1, 1.0, 1.0, 1.0,
-        3.1, 1.0, 1.0, 1.0,
-        3.1, 1.0, -1.0, 1.0,
-
-        // Bottom face
-        1.1, -1.0, -1.0, 1.0,
-        3.1, -1.0, -1.0, 1.0,
-        3.1, -1.0, 1.0, 1.0,
-        1.1, -1.0, 1.0, 1.0,
-
-        // Right face
-        3.1, -1.0, -1.0, 1.0,
-        3.1, 1.0, -1.0, 1.0,
-        3.1, 1.0, 1.0, 1.0,
-        3.1, -1.0, 1.0, 1.0,
-
-        // Left face
-        1.1, -1.0, -1.0, 1.0,
-        1.1, -1.0, 1.0, 1.0,
-        1.1, 1.0, 1.0, 1.0,
-        1.1, 1.0, -1.0, 1.0
-      ];
-
-      var cube3 = [
-        3.2, -1.0, 1.0, 1.0,
-        5.2, -1.0, 1.0, 1.0,
-        5.2, 1.0, 1.0, 1.0,
-        3.2, 1.0, 1.0, 1.0,
-
-        3.2, -1.0, -1.0, 1.0,
-        3.2, 1.0, -1.0, 1.0,
-        5.2, 1.0, -1.0, 1.0,
-        5.2, -1.0, -1.0, 1.0,
-
-        3.2, 1.0, -1.0, 1.0,
-        3.2, 1.0, 1.0, 1.0,
-        5.2, 1.0, 1.0, 1.0,
-        5.2, 1.0, -1.0, 1.0,
-
-        3.2, -1.0, -1.0, 1.0,
-        5.2, -1.0, -1.0, 1.0,
-        5.2, -1.0, 1.0, 1.0,
-        3.2, -1.0, 1.0, 1.0,
-
-        5.2, -1.0, -1.0, 1.0,
-        5.2, 1.0, -1.0, 1.0,
-        5.2, 1.0, 1.0, 1.0,
-        5.2, -1.0, 1.0, 1.0,
-
-        3.2, -1.0, -1.0, 1.0,
-        3.2, -1.0, 1.0, 1.0,
-        3.2, 1.0, 1.0, 1.0,
-        3.2, 1.0, -1.0, 1.0
-      ];
-
-      var cube4 = [
-        5.3, -1.0, 1.0, 1.0,
-        7.3, -1.0, 1.0, 1.0,
-        7.3, 1.0, 1.0, 1.0,
-        5.3, 1.0, 1.0, 1.0,
-
-        5.3, -1.0, -1.0, 1.0,
-        5.3, 1.0, -1.0, 1.0,
-        7.3, 1.0, -1.0, 1.0,
-        7.3, -1.0, -1.0, 1.0,
-
-        5.3, 1.0, -1.0, 1.0,
-        5.3, 1.0, 1.0, 1.0,
-        7.3, 1.0, 1.0, 1.0,
-        7.3, 1.0, -1.0, 1.0,
-
-        5.3, -1.0, -1.0, 1.0,
-        7.3, -1.0, -1.0, 1.0,
-        7.3, -1.0, 1.0, 1.0,
-        5.3, -1.0, 1.0, 1.0,
-
-        7.3, -1.0, -1.0, 1.0,
-        7.3, 1.0, -1.0, 1.0,
-        7.3, 1.0, 1.0, 1.0,
-        7.3, -1.0, 1.0, 1.0,
-
-        5.3, -1.0, -1.0, 1.0,
-        5.3, -1.0, 1.0, 1.0,
-        5.3, 1.0, 1.0, 1.0,
-        5.3, 1.0, -1.0, 1.0
-      ];
-
-      var cube5 = [   // Coordinates
-        // Front face
-        -1.0, 1.1, 1.0, 1.0,
-        1.0, 1.1, 1.0, 1.0,
-        1.0, 3.1, 1.0, 1.0,
-        -1.0, 3.1, 1.0, 1.0,
-
-        // Back face
-        -1.0, 1.1, -1.0, 1.0,
-        -1.0, 3.1, -1.0, 1.0,
-        1.0, 3.1, -1.0, 1.0,
-        1.0, 1.1, -1.0, 1.0,
-
-        // Top face
-        -1.0, 3.1, -1.0, 1.0,
-        -1.0, 3.1, 1.0, 1.0,
-        1.0, 3.1, 1.0, 1.0,
-        1.0, 3.1, -1.0, 1.0,
-
-        // Bottom face
-        -1.0, 1.1, -1.0, 1.0,
-        1.0, 1.1, -1.0, 1.0,
-        1.0, 1.1, 1.0, 1.0,
-        -1.0, 1.1, 1.0, 1.0,
-
-        // Right face
-        1.0, 1.1, -1.0, 1.0,
-        1.0, 3.1, -1.0, 1.0,
-        1.0, 3.1, 1.0, 1.0,
-        1.0, 1.1, 1.0, 1.0,
-
-        // Left face
-        -1.0, 1.1, -1.0, 1.0,
-        -1.0, 1.1, 1.0, 1.0,
-        -1.0, 3.1, 1.0, 1.0,
-        -1.0, 3.1, -1.0, 1.0
-      ];
-
-      var cube6 = [
-        // Front face
-        1.1, 1.1, 1.0, 1.0,
-        3.1, 1.1, 1.0, 1.0,
-        3.1, 3.1, 1.0, 1.0,
-        1.1, 3.1, 1.0, 1.0,
-
-        // Back face
-        1.1, 1.1, -1.0, 1.0,
-        1.1, 3.1, -1.0, 1.0,
-        3.1, 3.1, -1.0, 1.0,
-        3.1, 1.1, -1.0, 1.0,
-
-        // Top face
-        1.1, 3.1, -1.0, 1.0,
-        1.1, 3.1, 1.0, 1.0,
-        3.1, 3.1, 1.0, 1.0,
-        3.1, 3.1, -1.0, 1.0,
-
-        // Bottom face
-        1.1, 1.1, -1.0, 1.0,
-        3.1, 1.1, -1.0, 1.0,
-        3.1, 1.1, 1.0, 1.0,
-        1.1, 1.1, 1.0, 1.0,
-
-        // Right face
-        3.1, 1.1, -1.0, 1.0,
-        3.1, 3.1, -1.0, 1.0,
-        3.1, 3.1, 1.0, 1.0,
-        3.1, 1.1, 1.0, 1.0,
-
-        // Left face
-        1.1, 1.1, -1.0, 1.0,
-        1.1, 1.1, 1.0, 1.0,
-        1.1, 3.1, 1.0, 1.0,
-        1.1, 3.1, -1.0, 1.0
-      ];
-
-      var cube7 = [
-        3.2, 1.1, 1.0, 1.0,
-        5.2, 1.1, 1.0, 1.0,
-        5.2, 3.1, 1.0, 1.0,
-        3.2, 3.1, 1.0, 1.0,
-
-        3.2, 1.1, -1.0, 1.0,
-        3.2, 3.1, -1.0, 1.0,
-        5.2, 3.1, -1.0, 1.0,
-        5.2, 1.1, -1.0, 1.0,
-
-        3.2, 3.1, -1.0, 1.0,
-        3.2, 3.1, 1.0, 1.0,
-        5.2, 3.1, 1.0, 1.0,
-        5.2, 3.1, -1.0, 1.0,
-
-        3.2, 1.1, -1.0, 1.0,
-        5.2, 1.1, -1.0, 1.0,
-        5.2, 1.1, 1.0, 1.0,
-        3.2, 1.1, 1.0, 1.0,
-
-        5.2, 1.1, -1.0, 1.0,
-        5.2, 3.1, -1.0, 1.0,
-        5.2, 3.1, 1.0, 1.0,
-        5.2, 1.1, 1.0, 1.0,
-
-        3.2, 1.1, -1.0, 1.0,
-        3.2, 1.1, 1.0, 1.0,
-        3.2, 3.1, 1.0, 1.0,
-        3.2, 3.1, -1.0, 1.0
-      ];
-
-      var cube8 = [
-        5.3, 1.1, 1.0, 1.0,
-        7.3, 1.1, 1.0, 1.0,
-        7.3, 3.1, 1.0, 1.0,
-        5.3, 3.1, 1.0, 1.0,
-
-        5.3, 1.1, -1.0, 1.0,
-        5.3, 3.1, -1.0, 1.0,
-        7.3, 3.1, -1.0, 1.0,
-        7.3, 1.1, -1.0, 1.0,
-
-        5.3, 3.1, -1.0, 1.0,
-        5.3, 3.1, 1.0, 1.0,
-        7.3, 3.1, 1.0, 1.0,
-        7.3, 3.1, -1.0, 1.0,
-
-        5.3, 1.1, -1.0, 1.0,
-        7.3, 1.1, -1.0, 1.0,
-        7.3, 1.1, 1.0, 1.0,
-        5.3, 1.1, 1.0, 1.0,
-
-        7.3, 1.1, -1.0, 1.0,
-        7.3, 3.1, -1.0, 1.0,
-        7.3, 3.1, 1.0, 1.0,
-        7.3, 1.1, 1.0, 1.0,
-
-        5.3, 1.1, -1.0, 1.0,
-        5.3, 1.1, 1.0, 1.0,
-        5.3, 3.1, 1.0, 1.0,
-        5.3, 3.1, -1.0, 1.0
-      ];
-
-      var cube9 = [   // Coordinates
-        // Front face
-        -1.0, 3.2, 1.0, 1.0,
-        1.0, 3.2, 1.0, 1.0,
-        1.0, 5.2, 1.0, 1.0,
-        -1.0, 5.2, 1.0, 1.0,
-
-        // Back face
-        -1.0, 3.2, -1.0, 1.0,
-        -1.0, 5.2, -1.0, 1.0,
-        1.0, 5.2, -1.0, 1.0,
-        1.0, 3.2, -1.0, 1.0,
-
-        // Top face
-        -1.0, 5.2, -1.0, 1.0,
-        -1.0, 5.2, 1.0, 1.0,
-        1.0, 5.2, 1.0, 1.0,
-        1.0, 5.2, -1.0, 1.0,
-
-        // Bottom face
-        -1.0, 3.2, -1.0, 1.0,
-        1.0, 3.2, -1.0, 1.0,
-        1.0, 3.2, 1.0, 1.0,
-        -1.0, 3.2, 1.0, 1.0,
-
-        // Right face
-        1.0, 3.2, -1.0, 1.0,
-        1.0, 5.2, -1.0, 1.0,
-        1.0, 5.2, 1.0, 1.0,
-        1.0, 3.2, 1.0, 1.0,
-
-        // Left face
-        -1.0, 3.2, -1.0, 1.0,
-        -1.0, 3.2, 1.0, 1.0,
-        -1.0, 5.2, 1.0, 1.0,
-        -1.0, 5.2, -1.0, 1.0
-      ];
-
-      var cube10 = [
-        // Front face
-        1.1, 3.2, 1.0, 1.0,
-        3.1, 3.2, 1.0, 1.0,
-        3.1, 5.2, 1.0, 1.0,
-        1.1, 5.2, 1.0, 1.0,
-
-        // Back face
-        1.1, 3.2, -1.0, 1.0,
-        1.1, 5.2, -1.0, 1.0,
-        3.1, 5.2, -1.0, 1.0,
-        3.1, 3.2, -1.0, 1.0,
-
-        // Top face
-        1.1, 5.2, -1.0, 1.0,
-        1.1, 5.2, 1.0, 1.0,
-        3.1, 5.2, 1.0, 1.0,
-        3.1, 5.2, -1.0, 1.0,
-
-        // Bottom face
-        1.1, 3.2, -1.0, 1.0,
-        3.1, 3.2, -1.0, 1.0,
-        3.1, 3.2, 1.0, 1.0,
-        1.1, 3.2, 1.0, 1.0,
-
-        // Right face
-        3.1, 3.2, -1.0, 1.0,
-        3.1, 5.2, -1.0, 1.0,
-        3.1, 5.2, 1.0, 1.0,
-        3.1, 3.2, 1.0, 1.0,
-
-        // Left face
-        1.1, 3.2, -1.0, 1.0,
-        1.1, 3.2, 1.0, 1.0,
-        1.1, 5.2, 1.0, 1.0,
-        1.1, 5.2, -1.0, 1.0
-      ];
-
-      var cube11 = [
-        3.2, 3.2, 1.0, 1.0,
-        5.2, 3.2, 1.0, 1.0,
-        5.2, 5.2, 1.0, 1.0,
-        3.2, 5.2, 1.0, 1.0,
-
-        3.2, 3.2, -1.0, 1.0,
-        3.2, 5.2, -1.0, 1.0,
-        5.2, 5.2, -1.0, 1.0,
-        5.2, 3.2, -1.0, 1.0,
-
-        3.2, 5.2, -1.0, 1.0,
-        3.2, 5.2, 1.0, 1.0,
-        5.2, 5.2, 1.0, 1.0,
-        5.2, 5.2, -1.0, 1.0,
-
-        3.2, 3.2, -1.0, 1.0,
-        5.2, 3.2, -1.0, 1.0,
-        5.2, 3.2, 1.0, 1.0,
-        3.2, 3.2, 1.0, 1.0,
-
-        5.2, 3.2, -1.0, 1.0,
-        5.2, 5.2, -1.0, 1.0,
-        5.2, 5.2, 1.0, 1.0,
-        5.2, 3.2, 1.0, 1.0,
-
-        3.2, 3.2, -1.0, 1.0,
-        3.2, 3.2, 1.0, 1.0,
-        3.2, 5.2, 1.0, 1.0,
-        3.2, 5.2, -1.0, 1.0
-      ];
-
-      var cube12 = [
-        5.3, 3.2, 1.0, 1.0,
-        7.3, 3.2, 1.0, 1.0,
-        7.3, 5.2, 1.0, 1.0,
-        5.3, 5.2, 1.0, 1.0,
-
-        5.3, 3.2, -1.0, 1.0,
-        5.3, 5.2, -1.0, 1.0,
-        7.3, 5.2, -1.0, 1.0,
-        7.3, 3.2, -1.0, 1.0,
-
-        5.3, 5.2, -1.0, 1.0,
-        5.3, 5.2, 1.0, 1.0,
-        7.3, 5.2, 1.0, 1.0,
-        7.3, 5.2, -1.0, 1.0,
-
-        5.3, 3.2, -1.0, 1.0,
-        7.3, 3.2, -1.0, 1.0,
-        7.3, 3.2, 1.0, 1.0,
-        5.3, 3.2, 1.0, 1.0,
-
-        7.3, 3.2, -1.0, 1.0,
-        7.3, 5.2, -1.0, 1.0,
-        7.3, 5.2, 1.0, 1.0,
-        7.3, 3.2, 1.0, 1.0,
-
-        5.3, 3.2, -1.0, 1.0,
-        5.3, 3.2, 1.0, 1.0,
-        5.3, 5.2, 1.0, 1.0,
-        5.3, 5.2, -1.0, 1.0
-      ];
-
-      var cube13 = [   // Coordinates
-        // Front face
-        -1.0, 5.3, 1.0, 1.0,
-        1.0, 5.3, 1.0, 1.0,
-        1.0, 7.3, 1.0, 1.0,
-        -1.0, 7.3, 1.0, 1.0,
-
-        // Back face
-        -1.0, 5.3, -1.0, 1.0,
-        -1.0, 7.3, -1.0, 1.0,
-        1.0, 7.3, -1.0, 1.0,
-        1.0, 5.3, -1.0, 1.0,
-
-        // Top face
-        -1.0, 7.3, -1.0, 1.0,
-        -1.0, 7.3, 1.0, 1.0,
-        1.0, 7.3, 1.0, 1.0,
-        1.0, 7.3, -1.0, 1.0,
-
-        // Bottom face
-        -1.0, 5.3, -1.0, 1.0,
-        1.0, 5.3, -1.0, 1.0,
-        1.0, 5.3, 1.0, 1.0,
-        -1.0, 5.3, 1.0, 1.0,
-
-        // Right face
-        1.0, 5.3, -1.0, 1.0,
-        1.0, 7.3, -1.0, 1.0,
-        1.0, 7.3, 1.0, 1.0,
-        1.0, 5.3, 1.0, 1.0,
-
-        // Left face
-        -1.0, 5.3, -1.0, 1.0,
-        -1.0, 5.3, 1.0, 1.0,
-        -1.0, 7.3, 1.0, 1.0,
-        -1.0, 7.3, -1.0, 1.0
-      ];
-
-      var cube14 = [
-        // Front face
-        1.1, 5.3, 1.0, 1.0,
-        3.1, 5.3, 1.0, 1.0,
-        3.1, 7.3, 1.0, 1.0,
-        1.1, 7.3, 1.0, 1.0,
-
-        // Back face
-        1.1, 5.3, -1.0, 1.0,
-        1.1, 7.3, -1.0, 1.0,
-        3.1, 7.3, -1.0, 1.0,
-        3.1, 5.3, -1.0, 1.0,
-
-        // Top face
-        1.1, 7.3, -1.0, 1.0,
-        1.1, 7.3, 1.0, 1.0,
-        3.1, 7.3, 1.0, 1.0,
-        3.1, 7.3, -1.0, 1.0,
-
-        // Bottom face
-        1.1, 5.3, -1.0, 1.0,
-        3.1, 5.3, -1.0, 1.0,
-        3.1, 5.3, 1.0, 1.0,
-        1.1, 5.3, 1.0, 1.0,
-
-        // Right face
-        3.1, 5.3, -1.0, 1.0,
-        3.1, 7.3, -1.0, 1.0,
-        3.1, 7.3, 1.0, 1.0,
-        3.1, 5.3, 1.0, 1.0,
-
-        // Left face
-        1.1, 5.3, -1.0, 1.0,
-        1.1, 5.3, 1.0, 1.0,
-        1.1, 7.3, 1.0, 1.0,
-        1.1, 7.3, -1.0, 1.0
-      ];
-
-      var cube15 = [
-        3.2, 5.3, 1.0, 1.0,
-        5.2, 5.3, 1.0, 1.0,
-        5.2, 7.3, 1.0, 1.0,
-        3.2, 7.3, 1.0, 1.0,
-
-        3.2, 5.3, -1.0, 1.0,
-        3.2, 7.3, -1.0, 1.0,
-        5.2, 7.3, -1.0, 1.0,
-        5.2, 5.3, -1.0, 1.0,
-
-        3.2, 7.3, -1.0, 1.0,
-        3.2, 7.3, 1.0, 1.0,
-        5.2, 7.3, 1.0, 1.0,
-        5.2, 7.3, -1.0, 1.0,
-
-        3.2, 5.3, -1.0, 1.0,
-        5.2, 5.3, -1.0, 1.0,
-        5.2, 5.3, 1.0, 1.0,
-        3.2, 5.3, 1.0, 1.0,
-
-        5.2, 5.3, -1.0, 1.0,
-        5.2, 7.3, -1.0, 1.0,
-        5.2, 7.3, 1.0, 1.0,
-        5.2, 5.3, 1.0, 1.0,
-
-        3.2, 5.3, -1.0, 1.0,
-        3.2, 5.3, 1.0, 1.0,
-        3.2, 7.3, 1.0, 1.0,
-        3.2, 7.3, -1.0, 1.0
-      ];
-
-      var cube16 = [
-        5.3, 5.3, 1.0, 1.0,
-        7.3, 5.3, 1.0, 1.0,
-        7.3, 7.3, 1.0, 1.0,
-        5.3, 7.3, 1.0, 1.0,
-
-        5.3, 5.3, -1.0, 1.0,
-        5.3, 7.3, -1.0, 1.0,
-        7.3, 7.3, -1.0, 1.0,
-        7.3, 5.3, -1.0, 1.0,
-
-        5.3, 7.3, -1.0, 1.0,
-        5.3, 7.3, 1.0, 1.0,
-        7.3, 7.3, 1.0, 1.0,
-        7.3, 7.3, -1.0, 1.0,
-
-        5.3, 5.3, -1.0, 1.0,
-        7.3, 5.3, -1.0, 1.0,
-        7.3, 5.3, 1.0, 1.0,
-        5.3, 5.3, 1.0, 1.0,
-
-        7.3, 5.3, -1.0, 1.0,
-        7.3, 7.3, -1.0, 1.0,
-        7.3, 7.3, 1.0, 1.0,
-        7.3, 5.3, 1.0, 1.0,
-
-        5.3, 5.3, -1.0, 1.0,
-        5.3, 5.3, 1.0, 1.0,
-        5.3, 7.3, 1.0, 1.0,
-        5.3, 7.3, -1.0, 1.0
-      ];
-  
       // Indices of the vertices
       var indices = [
         0, 1, 2, 0, 2, 3,    // Front face
@@ -743,129 +239,99 @@
         gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(aPositionPointer);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-
-
         gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_BYTE, 0);
       }
 
-      drawCubes(cubeBuffer, cube1);
-      drawCubes(cubeBuffer, cube2);
-      drawCubes(cubeBuffer, cube3);
-      drawCubes(cubeBuffer, cube4);
-      drawCubes(cubeBuffer, cube5);
-      drawCubes(cubeBuffer, cube6);
-      drawCubes(cubeBuffer, cube7);
-      drawCubes(cubeBuffer, cube8);
-      drawCubes(cubeBuffer, cube9);
-      drawCubes(cubeBuffer, cube10);
-      drawCubes(cubeBuffer, cube11);
-      drawCubes(cubeBuffer, cube12);
-      drawCubes(cubeBuffer, cube13);
-      drawCubes(cubeBuffer, cube14);
-      drawCubes(cubeBuffer, cube15);
-      drawCubes(cubeBuffer, cube16);
-
-
+      var cubeCount = generatedCubes.length;
+      for (var i = 0; i < cubeCount; i++) {
+        drawCubes(cubeBuffer, generatedCubes[i]);
+      }
 
 
       // CANVAS ROTATION HANDLER
       // left click to rotate
-      
+
       // how far the cam is from the object 
-          const radius = 50.0; 
-          const easeFactor = 0.05; 
+      const radius = 50.0;
+      const easeFactor = 0.05;
 
-          let isMouseDown = false;
+      let isMouseDown = false;
 
-          let cursorX = 0;
-          let cursorY = 0; 
-          let currentCursorX = 0;
-          let currentCursorY = 0;
-          let initialMouseX = 0;
-          let initialMouseY = 0; 
-          
-          // Listen for mouse movement
-          window.addEventListener('mousemove', (event) => {
-            if (isMouseDown) { 
-              const mouseX = event.clientX; 
-              const mouseY = event.clientY; 
-          
-              const deltaX = mouseX - initialMouseX;
-              const deltaY = mouseY - initialMouseY;
-          
-              const sensitivity = 0.005; 
-              cursorX += deltaX * sensitivity; 
-              cursorY += deltaY * sensitivity; 
-          
-              initialMouseX = mouseX;
-              initialMouseY = mouseY;
-            }
-          });
-          
-          window.addEventListener('mousedown', (event) => {
-            if (event.button === 0) { 
-              isMouseDown = true;
-              initialMouseX = event.clientX;
-              initialMouseY = event.clientY;
-            }
-          });
-          
-          window.addEventListener('mouseup', (event) => {
-            if (event.button === 0) { // Left mouse button (button 0)
-              isMouseDown = false;
-            }
-          });
-          
-          // Linear interpolation
-          function interpolate(start, end, t) {
-            return start + (end - start) * t;
-          }
-          
-          function animate() {
-            // interpolation
-            currentCursorX = interpolate(currentCursorX, cursorX, easeFactor);
-            currentCursorY = interpolate(currentCursorY, cursorY, easeFactor);
-          
-            // cursorY stays within limits
-            const maxVerticalAngle = Math.PI / 2 - 0.01; // vertical rotation cannot go above 90 degrees
-            const clampedCursorY = Math.max(Math.min(currentCursorY, maxVerticalAngle), -maxVerticalAngle);
-          
-            const eyeX = radius * Math.sin(currentCursorX) * Math.cos(clampedCursorY); // y axis rotation
-            const eyeY = radius * Math.sin(clampedCursorY); // x axis rotation
-            const eyeZ = radius * Math.cos(currentCursorX) * Math.cos(clampedCursorY); // y axis rotation
-            const eyePoint = [eyeX, eyeY, eyeZ, 1.0];
+      let cursorX = 0;
+      let cursorY = 0;
+      let currentCursorX = 0;
+      let currentCursorY = 0;
+      let initialMouseX = 0;
+      let initialMouseY = 0;
 
-            const viewMatrix = mat4.create();
-            mat4.lookAt(viewMatrix, eyePoint, lookAtPoint, upVector);
-          
-            gl.uniformMatrix4fv(uViewMatrixPointer, false, new Float32Array(viewMatrix))
-            
-            // draw cubes weeeeeeeeeeeeeeeeeeeeeeeeee
-            // todo: [cube1,cube2,...].foreach(drawCubes(stuff))
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
-            drawCubes(cubeBuffer, cube1);
-            drawCubes(cubeBuffer, cube2);
-            drawCubes(cubeBuffer, cube3);
-            drawCubes(cubeBuffer, cube4);
-            drawCubes(cubeBuffer, cube5);
-            drawCubes(cubeBuffer, cube6);
-            drawCubes(cubeBuffer, cube7);
-            drawCubes(cubeBuffer, cube8);
-            drawCubes(cubeBuffer, cube9);
-            drawCubes(cubeBuffer, cube10);
-            drawCubes(cubeBuffer, cube11);
-            drawCubes(cubeBuffer, cube12);
-            drawCubes(cubeBuffer, cube13);
-            drawCubes(cubeBuffer, cube14);
-            drawCubes(cubeBuffer, cube15);
-            drawCubes(cubeBuffer, cube16);
+      // Listen for mouse movement
+      window.addEventListener('mousemove', (event) => {
+        if (isMouseDown) {
+          const mouseX = event.clientX;
+          const mouseY = event.clientY;
 
-            requestAnimationFrame(animate);
-          }
-          
-          // start animation
-          requestAnimationFrame(animate);
+          const deltaX = mouseX - initialMouseX;
+          const deltaY = mouseY - initialMouseY;
+
+          const sensitivity = 0.005;
+          cursorX += deltaX * sensitivity;
+          cursorY += deltaY * sensitivity;
+
+          initialMouseX = mouseX;
+          initialMouseY = mouseY;
+        }
+      });
+
+      window.addEventListener('mousedown', (event) => {
+        if (event.button === 0) {
+          isMouseDown = true;
+          initialMouseX = event.clientX;
+          initialMouseY = event.clientY;
+        }
+      });
+
+      window.addEventListener('mouseup', (event) => {
+        if (event.button === 0) { // Left mouse button (button 0)
+          isMouseDown = false;
+        }
+      });
+
+      // Linear interpolation
+      function interpolate(start, end, t) {
+        return start + (end - start) * t;
+      }
+
+      function animate() {
+        // interpolation
+        currentCursorX = interpolate(currentCursorX, cursorX, easeFactor);
+        currentCursorY = interpolate(currentCursorY, cursorY, easeFactor);
+
+        // cursorY stays within limits
+        const maxVerticalAngle = Math.PI / 2 - 0.01; // vertical rotation cannot go above 90 degrees
+        const clampedCursorY = Math.max(Math.min(currentCursorY, maxVerticalAngle), -maxVerticalAngle);
+
+        const eyeX = radius * Math.sin(currentCursorX) * Math.cos(clampedCursorY); // y axis rotation
+        const eyeY = radius * Math.sin(clampedCursorY); // x axis rotation
+        const eyeZ = radius * Math.cos(currentCursorX) * Math.cos(clampedCursorY); // y axis rotation
+        const eyePoint = [eyeX, eyeY, eyeZ, 1.0];
+
+        const viewMatrix = mat4.create();
+        mat4.lookAt(viewMatrix, eyePoint, lookAtPoint, upVector);
+
+        gl.uniformMatrix4fv(uViewMatrixPointer, false, new Float32Array(viewMatrix))
+
+        // draw cubes weeeeeeeeeeeeeeeeeeeeeeeeee
+        // todo: [cube1,cube2,...].foreach(drawCubes(stuff))
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        for (var i = 0; i < cubeCount; i++) {
+          drawCubes(cubeBuffer, generatedCubes[i]);
+        }
+        requestAnimationFrame(animate);
+      }
+
+      // start animation
+      requestAnimationFrame(animate);
     }
   </script>
 </head>
