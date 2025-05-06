@@ -199,6 +199,24 @@ function main() {
         }
     });
 
+    window.addEventListener('keydown', (event) => {
+        const rotationStep = 0.05; // Adjust rotation step size as needed
+        switch (event.key) {
+            case 'ArrowLeft': // Rotate left
+                cursorX -= rotationStep;
+                break;
+            case 'ArrowRight': // Rotate right
+                cursorX += rotationStep;
+                break;
+            case 'ArrowUp': // Rotate up
+                cursorY += rotationStep;
+                break;
+            case 'ArrowDown': // Rotate down
+                cursorY -= rotationStep;
+                break;
+        }
+    });
+
     // Function to animate the perspective movement
     function animate() {
         // Update the cursor position
