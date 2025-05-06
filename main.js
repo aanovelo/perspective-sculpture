@@ -153,7 +153,7 @@ function main() {
     // left click to rotate
 
     // How far the cam is from the object
-    const radius = 50.0;
+    let radius = 50.0;
     const easeFactor = 0.05;
 
     // Variables for mouse movement
@@ -217,14 +217,26 @@ function main() {
         }
     });
 
+    window.addEventListener('wheel', (event) => {
+        const zoomStep = 1.0;
+        if (event.deltaY < 0) {
+            radius = Math.max(5.0, radius - zoomStep); // preventing zooming in too much
+        } else {
+            radius = Math.min(100.0, radius + zoomStep); // preventing zooming out too far
+        }
+    });
+
     // Function to animate the perspective movement
     function animate() {
         // Update the cursor position
         currentCursorX = interpolate(currentCursorX, cursorX, easeFactor);
         currentCursorY = interpolate(currentCursorY, cursorY, easeFactor);
 
-        // Calculate the eye position based on the cursor position
-        const newEyePoint = calculateEyePosition(currentCursorX, currentCursorY, radius);
+        // calculate the eye position based on the radius (zoom level)
+        const eyeX = radius * Math.sin(currentCursorX) * Math.cos(currentCursorY);
+        const eyeY = radius * Math.sin(currentCursorY);
+        const eyeZ = radius * Math.cos(currentCursorX) * Math.cos(currentCursorY);
+        const newEyePoint = [eyeX, eyeY, eyeZ, 1.0];
 
         // Update the view matrix with the new eye position
         const viewMatrix = mat4.create();
