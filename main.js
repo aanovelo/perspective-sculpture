@@ -102,7 +102,7 @@ function main() {
     var cubeCount = cubeCountLength * cubeCountHeight;
     var edgeLength = 2.0;
     var startCoordX = -cubeCountLength * edgeLength / 2;
-    var startCoordY = 0;
+    var startCoordY = -cubeCountLength * edgeLength / 2;
     var generatedCubes = [];
     createCubes(cubeCountLength, cubeCountHeight, edgeLength, startCoordX, startCoordY, generatedCubes);
 
