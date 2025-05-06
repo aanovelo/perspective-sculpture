@@ -5,6 +5,14 @@ function main() {
         console.log("Failed to retrieve the <canvas> element");
     }
 
+    // resize canvas to fit the viewport
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
     // Get the rendering context (WebGL)
     var gl = initializeWebGL(canvas, true);
 
@@ -144,7 +152,7 @@ function main() {
     // CANVAS ROTATION HANDLER
     // left click to rotate
 
-    // How far the cam is from the object 
+    // How far the cam is from the object
     const radius = 50.0;
     const easeFactor = 0.05;
 
@@ -199,7 +207,7 @@ function main() {
 
         // Calculate the eye position based on the cursor position
         const newEyePoint = calculateEyePosition(currentCursorX, currentCursorY, radius);
-        
+
         // Update the view matrix with the new eye position
         const viewMatrix = mat4.create();
         mat4.lookAt(viewMatrix, newEyePoint, lookAtPoint, upVector);
