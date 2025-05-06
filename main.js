@@ -226,11 +226,34 @@ function main() {
         }
     });
 
+    let idleTime = 0;
+    let isIdle = true;
+
+    function resetIdleState() {
+        isIdle = false;
+        idleTime = 0;
+        setTimeout(() => {
+            isIdle = true;
+        }, 3000); // 3 seconds of inactivity
+    }
+
+    // event listeners to detect user activity
+    ['mousemove', 'mousedown', 'keydown', 'wheel'].forEach(eventType => {
+        window.addEventListener(eventType, resetIdleState);
+    });
+
     // Function to animate the perspective movement
     function animate() {
         // Update the cursor position
         currentCursorX = interpolate(currentCursorX, cursorX, easeFactor);
         currentCursorY = interpolate(currentCursorY, cursorY, easeFactor);
+
+        // apply slow levitation when idle
+        if (isIdle) {
+            idleTime += 0.01;
+            cursorY += Math.sin(idleTime) * 0.002; // slow up and down movement
+            cursorX += Math.cos(idleTime) * 0.001; // slow rotation
+        }
 
         // calculate the eye position based on the radius (zoom level)
         const eyeX = radius * Math.sin(currentCursorX) * Math.cos(currentCursorY);
