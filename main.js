@@ -102,6 +102,36 @@ function main() {
 
 
     // TEXTURE PART
+    /*
+        Related Functions
+         loadTexture() - MAIN FUNCTION. Takes a URL of the image and then outputs a texture variable.
+         initTextureBuffer()
+         setTextureAttribute()
+        
+        Before "drawAssets" is called, the texture must be bound to the buffer using **gl.bindTexture().**
+        In the fragment shader program, we completely replace the object's color with the texture:
+
+        precision highp float;
+        varying vec4 vPosition;
+        varying vec4 vNormal;
+        varying highp vec2 vTextureCoord;
+        uniform sampler2D uSampler;
+        uniform vec4 uLightDiffuseColor;
+        uniform vec4 uLightDirectionVector;
+
+        void main() {
+            highp vec4 texelColor = texture2D(uSampler, vTextureCoord);
+            vec3 normal = normalize(vNormal.xyz);
+            vec3 lightDir = normalize(-uLightDirectionVector.xyz);
+
+            float lambertian = max(dot(normal, lightDir), 0.0);
+            gl_FragColor = vec4(texelColor.rgb * uLightDiffuseColor.rgb * lambertian, 1.0);
+        }
+
+        texture2D is used to get the pixel data of the texture in respect with its coordinates, therefore texelColor.rgb is the one used and
+        applied with lighting calculations basta yon
+
+    */
 
     var aTextureCoordPtr = gl.getAttribLocation(program, "aTextureCoord");
 
