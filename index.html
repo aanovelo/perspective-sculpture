@@ -3,8 +3,10 @@
 
 <head>
   <script type="x-shader/x-vertex" id="vshader">
+      
       attribute vec4 aPosition;
       attribute vec4 aNormal;   // variable for normal vector at each vertex
+      attribute vec2 aTextureCoord;
 
       uniform mat4 uModelMatrix;                // Model Matrix
       uniform mat4 uViewMatrix;                 // View Matrix
@@ -22,7 +24,12 @@
       varying vec4 vPosition; // Pass position to fragment shader
       varying vec4 vNormal;
 
+
+
+      varying highp vec2 vTextureCoord;
+
       void main() {
+        vTextureCoord = aTextureCoord;
 
         gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aPosition;
 
@@ -37,6 +44,7 @@
             float lambertCoefficient = max(dot(-normalized_uLightDirectionVector,normalized_aNormalVector),0.0);
 
         // Fd = Ld * Kd * (n dot -l)
+            //vec4 diffuseColor =  uMaterialDiffuseColor * uLightDiffuseColor * lambertCoefficient;
             vec4 diffuseColor =  uMaterialDiffuseColor * uLightDiffuseColor * lambertCoefficient;
 
         vDiffuseColor = vec4(diffuseColor.r, diffuseColor.g, diffuseColor.b, 1.0);
@@ -48,53 +56,33 @@
 
   <script type="x-shader/x-fragment" id="fshader">
       precision highp float;
-      varying vec4 vDiffuseColor;
+      
 
       varying vec4 vPosition;
       varying vec4 vNormal;
 
-      uniform vec4 uMaterialDiffuseColor;
+      // varying vec4 vDiffuseColor;
+      // uniform vec4 uMaterialDiffuseColor;
+
+      // varying highp vec3 vLighting;
+      varying highp vec2 vTextureCoord;
+      uniform sampler2D uSampler;
+
       uniform vec4 uLightDiffuseColor;
       uniform vec4 uLightDirectionVector;
 
-      // Simple noise function
-      float random(vec2 st) {
-          return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
-      }
-
-      float noise(vec2 st) {
-          vec2 i = floor(st);
-          vec2 f = fract(st);
-
-          float a = random(i);
-          float b = random(i + vec2(1.0, 0.0));
-          float c = random(i + vec2(0.0, 1.0));
-          float d = random(i + vec2(1.0, 1.0));
-
-          vec2 u = f * f * (3.0 - 2.0 * f);
-
-          return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-      }
-
 
       void main() {
-        // Normalize normal and light direction
+        highp vec4 texelColor = texture2D(uSampler, vTextureCoord);
         vec3 normal = normalize(vNormal.xyz);
         vec3 lightDir = normalize(-uLightDirectionVector.xyz);
 
-        // Lambertian reflection
         float lambertian = max(dot(normal, lightDir), 0.0);
 
-        // Generate grainy texture using noise
-        vec2 noiseCoord = vPosition.xy * 10.0; // Scale noise coordinates
-        float grain = noise(noiseCoord);
+        // vec4 diffuseColor = uMaterialDiffuseColor * uLightDiffuseColor * lambertian;
+        //gl_FragColor = vec4(diffuseColor.rgb, 1.0);
 
-        // Combine diffuse color with grainy texture
-        vec4 diffuseColor = uMaterialDiffuseColor * uLightDiffuseColor * lambertian;
-        diffuseColor.rgb += grain * 0.2; // Add grain effect
-
-        gl_FragColor = vec4(diffuseColor.rgb, 1.0);
-        // gl_FragColor = vDiffuseColor;
+        gl_FragColor = vec4(texelColor.rgb * uLightDiffuseColor.rgb * lambertian, 1.0);
       }
     </script>
 

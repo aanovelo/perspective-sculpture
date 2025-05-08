@@ -96,9 +96,158 @@ function main() {
     var uLightDirectionVectorPtr = gl.getUniformLocation(program, "uLightDirectionVector");
     gl.uniform4f(uLightDirectionVectorPtr, -1.0, -3.0, -5.0, 0.0);
 
+
+
+
+
+
+    // TEXTURE PART
+
+    var aTextureCoordPtr = gl.getAttribLocation(program, "aTextureCoord");
+
+    //
+    // Initialize a texture and load an image.
+    // When the image finished loading copy it into the texture.
+    //
+    // FUNCTION FOR LOADING IMAGE, return texture object after
+    function loadTexture(gl, url) {
+        const texture = gl.createTexture();
+
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        const level = 0;
+        const internalFormat = gl.RGBA;
+        const width = 1;
+        const height = 1;
+        const border = 0;
+        const srcFormat = gl.RGBA;
+        const srcType = gl.UNSIGNED_BYTE;
+        const pixel = new Uint8Array([0, 0, 255, 255]); // opaque blue
+        gl.texImage2D(
+        gl.TEXTURE_2D,
+        level,
+        internalFormat,
+        width,
+        height,
+        border,
+        srcFormat,
+        srcType,
+        pixel,
+        );
+    
+        const image = new Image();
+        image.onload = () => {
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            level,
+            internalFormat,
+            srcFormat,
+            srcType,
+            image,
+        );
+    
+        // WebGL1 has different requirements for power of 2 images
+        // vs. non power of 2 images so check if the image is a
+        // power of 2 in both dimensions.
+        if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+            // Yes, it's a power of 2. Generate mips.
+            gl.generateMipmap(gl.TEXTURE_2D);
+        } else {
+            // No, it's not a power of 2. Turn off mips and set
+            // wrapping to clamp to edge
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        }
+        };
+        image.src = url;
+    
+        return texture;
+    }
+    
+    function isPowerOf2(value) {
+        return (value & (value - 1)) === 0;
+    }
+
+    // Flip image pixels into the bottom-to-top order that WebGL expects.
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+
+    // LOAD THE TILES FOLDER
+    let textures = [];
+    const totalTiles = 117; // Total number of tiles
+
+    for (let i = 1; i <= totalTiles; i++) {
+        const texture = loadTexture(gl, `./tiles/mona_lisa_${i}.png`);
+        textures.push(texture);
+    }
+
+    
+
+
+    function initTextureBuffer(gl) {
+        const textureCoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+      
+        const textureCoordinates = [
+          // Front
+          0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+          // Back
+          0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+          // Top
+          0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+          // Bottom
+          0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+          // Right
+          0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+          // Left
+          0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+        ];
+      
+        gl.bufferData(
+          gl.ARRAY_BUFFER,
+          new Float32Array(textureCoordinates),
+          gl.STATIC_DRAW,
+        );
+      
+        return textureCoordBuffer;
+      }
+
+      const textureCoordBuffer = initTextureBuffer(gl);
+
+      function setTextureAttribute(gl) {
+        const num = 2; // every coordinate composed of 2 values
+        const type = gl.FLOAT; // the data in the buffer is 32-bit float
+        const normalize = false; // don't normalize
+        const stride = 0; // how many bytes to get from one set to the next
+        const offset = 0; // how many bytes inside the buffer to start from
+        gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+        gl.vertexAttribPointer(
+          aTextureCoordPtr,
+          num,
+          type,
+          normalize,
+          stride,
+          offset,
+        );
+        gl.enableVertexAttribArray(aTextureCoordPtr);
+      }
+
+      setTextureAttribute(gl);
+  
+
+
+
+
+
+
+
+
+
+
     // Initialize the variables for generating the cubes
-    var cubeCountLength = 10;
-    var cubeCountHeight = 5;
+    var cubeCountLength = 9;
+    var cubeCountHeight = 13;
     var cubeCount = cubeCountLength * cubeCountHeight;
     var edgeLength = 2.0;
     var startCoordX = -cubeCountLength * edgeLength / 2;
@@ -269,7 +418,12 @@ function main() {
         // Draw cubes
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
+
         for (var i = 0; i < cubeCount; i++) {
+
+            // index ng picture sorry for weird formula pero it works
+            gl.bindTexture(gl.TEXTURE_2D, textures[((((Math.floor(i/13))-1)%9 + 109) - i%13*9)]);
+
             drawAssets(gl, aPositionPointer, "cube", cubeBuffer, generatedCubes[i], indexBuffer, indices);
             drawAssets(gl, aPositionPointer, "string", stringBuffer, generatedStrings[i], null, null);
         }
