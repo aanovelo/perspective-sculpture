@@ -34,7 +34,7 @@ function main() {
     var uViewMatrixPointer = gl.getUniformLocation(program, "uViewMatrix");
     var uProjectionMatrixPointer = gl.getUniformLocation(program, "uProjectionMatrix");
 
-    gl.clearColor(0.0, 0.0, 0.0, 1.0); // Set clear color to black
+    gl.clearColor(1.0, 1.0, 1.0, 1.0); // Set clear color to black
     gl.clear(gl.COLOR_BUFFER_BIT);     // Clear color buffer
 
     // Enable depth testing
@@ -421,6 +421,10 @@ function main() {
         window.addEventListener(eventType, resetIdleState);
     });
 
+    var bufferMap = generateBufferMap(gl, generatedCubes, cubeCount);
+    var stringBufferMap = generateStringBufferMap(gl, generatedStrings, cubeCount);
+
+
     // Function to animate the perspective movement
     function animate() {
         // Update the cursor position
@@ -446,7 +450,7 @@ function main() {
         gl.uniformMatrix4fv(uViewMatrixPointer, false, new Float32Array(viewMatrix))
 
         // Draw cubes
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clearColor(1.0, 1.0, 1.0, 1.0); // Set clear color to black
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         for (var i = 0; i < cubeCount; i++) {
@@ -454,15 +458,73 @@ function main() {
             // index ng picture sorry for weird formula pero it works
             gl.bindTexture(gl.TEXTURE_2D, textures[((((Math.floor(i/13))-1)%9 + 109) - i%13*9)]);
 
-            drawAssets(gl, aPositionPointer, "cube", cubeBuffer, generatedCubes[i], indexBuffer, indices);
-            drawAssets(gl, aPositionPointer, "string", stringBuffer, generatedStrings[i], null, null);
+            drawAssets(gl, aPositionPointer, "cube", bufferMap[i], generatedCubes[i], indexBuffer, indices);
+            // drawAssets(gl, aPositionPointer, "string", stringBufferMap[i], generatedStrings[i], null, null);
         }
+
+        // drawPlane(gl, aPositionPointer, planeVertexBuffer, planeIndexBuffer, plane.indices.length);
+        
+
+
         requestAnimationFrame(animate);
     }
 
     // Start animation
     requestAnimationFrame(animate);
 }
+
+function generateBufferMap(gl, generatedCubes, cubeCount) {
+    var buffers = []
+    for (var i = 0; i < cubeCount; i++) {
+        var newBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, newBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(generatedCubes[i]), gl.STATIC_DRAW);
+        buffers.push(newBuffer);
+    }
+    return buffers;
+}
+
+function generateStringBufferMap(gl, generatedStrings, cubeCount) {
+    var buffers = []
+    for (var i = 0; i < cubeCount; i++) {
+        var newBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, newBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(generatedStrings[i]), gl.STATIC_DRAW);
+        buffers.push(newBuffer);
+    }
+    return buffers;
+}
+
+// Function to draw assets
+function drawAssets(gl, aPositionPointer, whichAsset, assetBuffer, asset, indexBuffer, indices) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, assetBuffer);
+    // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(asset), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(aPositionPointer);
+
+    if (whichAsset == "cube") {
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_BYTE, 0);
+    }
+    else if (whichAsset == "string") {
+        gl.drawArrays(gl.LINES, 0, 2); // Draw the line
+    }
+}
+
+// Function to create the strings
+function createStrings(cubeCount, generatedCubes, cubeCenter, top, generatedStrings) {
+    for (var i = 0; i < cubeCount; i++) {
+        var x = generatedCubes[i][0] + cubeCenter;  // place the string in the center of the cube
+        var y = generatedCubes[i][1] + cubeCenter;
+        var z = generatedCubes[i][2] - cubeCenter;
+        var string = [
+            x, y, z, 1.0,
+            x, top, z, 1.0
+        ];
+        generatedStrings.push(string);
+    }
+}
+
 
 // Function to create the cubes
 function createCubes(cubeCountLength, cubeCountHeight, edgeLength, startCoordX, startCoordY, generatedCubes) {
@@ -513,35 +575,7 @@ function createCubes(cubeCountLength, cubeCountHeight, edgeLength, startCoordX, 
     }
 }
 
-// Function to create the strings
-function createStrings(cubeCount, generatedCubes, cubeCenter, top, generatedStrings) {
-    for (var i = 0; i < cubeCount; i++) {
-        var x = generatedCubes[i][0] + cubeCenter;  // place the string in the center of the cube
-        var y = generatedCubes[i][1] + cubeCenter;
-        var z = generatedCubes[i][2] - cubeCenter;
-        var string = [
-            x, y, z, 1.0,
-            x, top, z, 1.0
-        ];
-        generatedStrings.push(string);
-    }
-}
 
-// Function to draw assets
-function drawAssets(gl, aPositionPointer, whichAsset, assetBuffer, asset, indexBuffer, indices) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, assetBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(asset), gl.STATIC_DRAW);
-    gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(aPositionPointer);
-
-    if (whichAsset == "cube") {
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_BYTE, 0);
-    }
-    else if (whichAsset == "string") {
-        gl.drawArrays(gl.LINES, 0, 2); // Draw the line
-    }
-}
 
 // Function for linear interpolation
 function interpolate(start, end, t) {
