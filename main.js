@@ -266,6 +266,17 @@ function main() {
     var generatedCubes = [];
     createCubes(cubeCountLength, cubeCountHeight, edgeLength, startCoordX, startCoordY, generatedCubes);
 
+    // Add this after the generatedCubes array initialization
+    var floatingParameters = [];
+
+    // Initialize floating parameters for each cube after createCubes is called
+    for (var i = 0; i < cubeCount; i++) {
+        floatingParameters.push({
+            baseY: generatedCubes[i][1], // Store the original Y coordinate
+            phaseOffset: Math.random() * Math.PI * 2,
+        });
+    }
+
     // Indices of the vertices
     var indices = [
         0, 1, 2, 0, 2, 3,       // Front face
@@ -430,22 +441,36 @@ function main() {
         mat4.lookAt(viewMatrix, newEyePoint, lookAtPoint, upVector);
         gl.uniformMatrix4fv(uViewMatrixPointer, false, new Float32Array(viewMatrix))
 
-        // Draw cubes
-        gl.clearColor(1.0, 1.0, 1.0, 1.0); // Set clear color to black
+        
+        gl.clearColor(1.0, 1.0, 1.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
+        const currentTime = performance.now() * 0.001; // Convert to seconds
+        const floatAmplitude = 0.1;  // higher value = more distance
+        const floatSpeed = 4.5;      // higher value = faster speed
+
         for (var i = 0; i < cubeCount; i++) {
+            // Calculate floating offset
+            const params = floatingParameters[i];
+            const floatOffset = floatAmplitude * Math.sin(currentTime * floatSpeed + params.phaseOffset);
+            
+            // Create a temporary array for the floating vertices
+            const floatingVertices = [...generatedCubes[i]]; // Clone the original vertices
+            
+            // Update Y coordinates
+            for (let j = 1; j < floatingVertices.length; j += 4) {
+                floatingVertices[j] = generatedCubes[i][j] + floatOffset;
+            }
 
-            // index ng picture sorry for weird formula pero it works
+            // Update buffer with floating vertices
+            gl.bindBuffer(gl.ARRAY_BUFFER, bufferMap[i]);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(floatingVertices), gl.DYNAMIC_DRAW);
+
             gl.bindTexture(gl.TEXTURE_2D, textures[((((Math.floor(i/13))-1)%9 + 109) - i%13*9)]);
-
-            drawAssets(gl, aPositionPointer, "cube", bufferMap[i], generatedCubes[i], indexBuffer, indices);
+            drawAssets(gl, aPositionPointer, "cube", bufferMap[i], floatingVertices, indexBuffer, indices);
             // drawAssets(gl, aPositionPointer, "string", stringBufferMap[i], generatedStrings[i], null, null);
         }
-
         // drawPlane(gl, aPositionPointer, planeVertexBuffer, planeIndexBuffer, plane.indices.length);
-        
-
 
         requestAnimationFrame(animate);
     }
