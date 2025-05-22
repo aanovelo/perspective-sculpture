@@ -335,6 +335,9 @@ function main() {
     let currentCursorY = 0;
     let initialMouseX = 0;
     let initialMouseY = 0;
+    let cameraX = 0;
+    let cameraY = 0;
+    let shiftPressed = false;
 
     // Listener for mouse movement
     window.addEventListener('mousemove', (event) => {
@@ -372,19 +375,45 @@ function main() {
 
     window.addEventListener('keydown', (event) => {
         const rotationStep = 0.05; // Adjust rotation step size as needed
+        const translationStep = 0.5;
+        if (event.key === 'Shift') {
+            shiftPressed = true;
+        }
         switch (event.key) {
             case 'ArrowLeft': // Rotate left
-                cursorX -= rotationStep;
+                if (shiftPressed) {
+                    cameraX -= translationStep
+                } else {
+                    cursorX -= rotationStep;
+                }
                 break;
             case 'ArrowRight': // Rotate right
-                cursorX += rotationStep;
+                if (shiftPressed) {
+                    cameraX += translationStep
+                } else {
+                    cursorX += rotationStep;
+                }
                 break;
             case 'ArrowUp': // Rotate up
-                cursorY += rotationStep;
+                if (shiftPressed) {
+                    cameraY += translationStep
+                } else {
+                    cursorY += rotationStep;
+                }
                 break;
             case 'ArrowDown': // Rotate down
-                cursorY -= rotationStep;
+                if (shiftPressed) {
+                    cameraY -= translationStep
+                } else {
+                    cursorY -= rotationStep;
+                }
                 break;
+        }
+    });
+
+    window.addEventListener('keyup', (event) => {
+        if (event.key === 'Shift') {
+            shiftPressed = false;
         }
     });
 
@@ -431,14 +460,14 @@ function main() {
         }
 
         // calculate the eye position based on the radius (zoom level)
-        const eyeX = radius * Math.sin(currentCursorX) * Math.cos(currentCursorY);
-        const eyeY = radius * Math.sin(currentCursorY);
+        const eyeX = radius * Math.sin(currentCursorX) * Math.cos(currentCursorY) + cameraX;
+        const eyeY = radius * Math.sin(currentCursorY) + cameraY;
         const eyeZ = radius * Math.cos(currentCursorX) * Math.cos(currentCursorY);
         const newEyePoint = [eyeX, eyeY, eyeZ, 1.0];
 
         // Update the view matrix with the new eye position
         const viewMatrix = mat4.create();
-        mat4.lookAt(viewMatrix, newEyePoint, lookAtPoint, upVector);
+        mat4.lookAt(viewMatrix, newEyePoint, [lookAtX + cameraX, lookAtY + cameraY, lookAtZ], upVector);
         gl.uniformMatrix4fv(uViewMatrixPointer, false, new Float32Array(viewMatrix))
 
         
