@@ -86,6 +86,33 @@
       }
     </script>
 
+  <script>
+    function initFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+
+      const exhibit = parseInt(params.get('exhibit'));
+
+      // default
+      if (isNaN(exhibit)) {
+        window.location.href = '/?exhibit=1';
+        return;
+      }
+
+      // Call the corresponding main function
+      if (exhibit === 1) {
+        main1(); 
+      } else if (exhibit === 2) {
+        main2(); 
+      } else if (exhibit === 3) {
+        main3(); 
+      } else {
+        window.location.href = '/?exhibit=1';
+      }
+    }
+  </script>
+
+
+
   <!-- Import external javascript file -->
   <!-- Helper javascript methods for initializing webgl -->
   <script src="./lib/webgl-init.js"></script>
@@ -94,11 +121,102 @@
   <script src="./lib/gl-matrix-min.js"></script>
 
   <!-- Link the external Javascript file -->
-  <script src="main.js" defer></script>
+  <script src="main_exhibit1.js" defer></script>
+  <script src="main_exhibit2.js" defer></script>
+  <script src="main_exhibit3.js" defer></script>
+  <link rel="stylesheet" href="stylesheet.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
-<body onload="main()" style="margin: 0;">
-  <canvas id="main_canvas" style="display: block;"></canvas>
+<body onload="initFromUrl()">
+  <div class="canvas-wrapper">
+    <canvas id="main_canvas" width="600" height="600"></canvas>
+  </div>
+
+  <button id="openModalBtn">Open Exhibits</button>
+    <div id="infobox">
+    <div class="instruction">
+      <span class="material-icons icon">mouse</span>
+      <div class="text">Left click and drag to rotate the camera</div>
+    </div>
+    <div class="instruction">
+      <span class="material-icons icon">keyboard_arrow_up</span>
+      <div class="text">Arrow keys to rotate around the object</div>
+    </div>
+    <div class="instruction">
+      <span class="material-icons icon">keyboard_arrow_right</span>
+      <div class="text">Shift + Arrow keys to move the camera</div>
+    </div>
+  </div>
+</div>
+
+
+  <div id="modalOverlay" style="display:none;">
+  <div id="modalContent">
+    <div class="modal-header">
+      <h2>Exhibits</h2>
+      <button id="closeModalBtn">X</button>
+    </div>
+
+    <div class="cards-container">
+      <div class="card">
+        <img src="icons/lisa_image.png" alt="Mona Lisa" />
+        <p>Mona Lisa</p>
+      </div>
+      <div class="card">
+        <img src="icons/starry_night_image.png" alt="Starry Night" />
+        <p>Starry Night</p>
+      </div>
+      <div class="card">
+        <img src="icons/spoliarium_image.png" alt="Spoliarium" />
+        <p>Spoliarium</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div>
+
+  <script>
+  const openModalBtn = document.getElementById('openModalBtn');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+
+  openModalBtn.addEventListener('click', () => {
+    modalOverlay.style.display = 'flex';
+  });
+
+  closeModalBtn.addEventListener('click', () => {
+    modalOverlay.style.display = 'none';
+  });
+
+  // Optional: clicking outside the modal content closes it
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+      modalOverlay.style.display = 'none';
+    }
+  });
+</script>
+
+<script>
+  // Select all cards
+  const cards = document.querySelectorAll('.card');
+
+  cards.forEach((card, index) => {
+    card.style.cursor = 'pointer'; // nice UX cue
+
+    card.addEventListener('click', () => {
+      if (index === 0) {
+        window.location.href = '/?exhibit=1';
+      } else if (index === 1) {
+        window.location.href = '/?exhibit=2';
+      } else if (index === 2) {
+        window.location.href = '/?exhibit=3';
+      }
+    });
+  });
+</script>
+
 </body>
 
 </html>
